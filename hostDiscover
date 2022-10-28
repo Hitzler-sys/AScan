@@ -1,0 +1,26 @@
+#!/bin/bash
+
+
+
+
+if echo "$1" | grep -iq "/";
+then
+    flag='-g'
+else
+    flag=''
+fi
+
+
+hosts=$(fping -a $flag $1 2>/dev/null )
+echo "working host "
+echo $hosts
+for host in $hosts
+do
+    ports=$(nmap -p- --min-rate=1000 -T4 $host | grep '^[0-9]' | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
+    if [ ${#ports} != 0 ] ;
+    then
+        nmap -p$ports $host -Pn -T4
+    else
+        echo "ports are closed for host $host , try udp ports "
+    fi
+done
